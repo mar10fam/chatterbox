@@ -9,3 +9,49 @@ How a session goes:
 3. Child pronounces it 
 4. AI judges it and logs
 5. Parents can view the progress of that session and see if there needs to be a change or more practice. 
+## Setup (macOS)
+
+### 1. System dependencies
+
+Requires [Homebrew](https://brew.sh).
+
+```bash
+brew install python@3.11 espeak-ng portaudio
+```
+
+- `python@3.11`: a stable version for torch and transformers
+- `espeak-ng`: needed by `phonemizer` to phonemize target words
+- `portaudio`: needed by `sounddevice` for mic recording
+
+### 2. Point phonemizer at espeak-ng
+
+```bash
+echo "export PHONEMIZER_ESPEAK_LIBRARY=$(brew --prefix)/lib/libespeak-ng.dylib" >> ~/.zshrc
+source ~/.zshrc
+ls $PHONEMIZER_ESPEAK_LIBRARY   # should print the path
+```
+
+### 3. Python environment
+
+```bash
+$(brew --prefix)/bin/python3.11 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 4. Download the model (~1.2 GB, optional)
+
+The [`facebook/wav2vec2-lv-60-espeak-cv-ft`](https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft)
+model downloads automatically on first use and is cached in
+`~/.cache/huggingface/` (not in this repo). To fetch it ahead of time:
+
+```bash
+hf download facebook/wav2vec2-lv-60-espeak-cv-ft
+```
+
+### Notes
+
+- The first time you record, macOS asks to let your terminal use the
+  microphone. Allow it, or recordings will be silent.
+- If you change dependencies, run `pip freeze > requirements.txt`.
