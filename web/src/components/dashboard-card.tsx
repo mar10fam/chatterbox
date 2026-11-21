@@ -1,49 +1,56 @@
-import type { ComponentType, ReactNode, SVGProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { cn } from "@/lib/utils";
 
+/** Lavender dashboard panel with a heading. */
 export function DashboardCard({
-  id,
   title,
-  className = "",
+  className,
   children,
-}: {
-  id: string;
-  title: string;
-  className?: string;
-  children: ReactNode;
-}) {
+  ...props
+}: Omit<ComponentProps<typeof Card>, "title"> & { title: string; children: ReactNode }) {
+  const headingId = `${props.id ?? title.toLowerCase().replace(/\W+/g, "-")}-title`;
   return (
-    <section
-      aria-labelledby={id}
-      className={`flex min-w-0 flex-col gap-3 rounded-[22px] bg-lavender p-[18px] lg:gap-4 lg:rounded-3xl lg:p-6 ${className}`}
-    >
-      <h2 id={id} className="m-0 font-display text-lg font-medium lg:text-xl">
-        {title}
-      </h2>
-      {children}
-    </section>
+    <Card variant="tinted" role="region" aria-labelledby={headingId} className={cn("min-w-0", className)} {...props}>
+      <CardHeader>
+        <CardTitle id={headingId} role="heading" aria-level={2}>
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-1 flex-col">{children}</CardContent>
+    </Card>
   );
 }
 
+/** Dashed placeholder shown inside a DashboardCard before there's data. */
 export function EmptyState({
   icon: Icon,
   title,
   description,
-  className = "",
-  descriptionClassName = "",
+  className,
 }: {
-  icon: ComponentType<SVGProps<SVGSVGElement> & { size?: number }>;
+  icon: LucideIcon;
   title: string;
   description: string;
   className?: string;
-  descriptionClassName?: string;
 }) {
   return (
-    <div
-      className={`flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-lavender-dash bg-white p-4 text-center lg:min-h-70 lg:gap-2.5 lg:rounded-[18px] lg:p-6 ${className}`}
-    >
-      <Icon className="size-[30px] text-brand lg:size-9" />
-      <p className="m-0 text-[15px] font-bold lg:text-base">{title}</p>
-      <p className={`m-0 text-[13px] text-muted lg:text-sm ${descriptionClassName}`}>{description}</p>
-    </div>
+    <Empty className={cn("rounded-2xl border-2 border-lavender-dash bg-card p-4 lg:p-6", className)}>
+      <EmptyHeader className="gap-2">
+        <EmptyMedia className="mb-0 text-brand">
+          <Icon className="size-[30px] lg:size-9" strokeWidth={2} aria-hidden />
+        </EmptyMedia>
+        <EmptyTitle className="font-sans text-[15px] font-bold tracking-normal lg:text-base">{title}</EmptyTitle>
+        <EmptyDescription className="text-[13px] lg:text-sm">{description}</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
   );
 }

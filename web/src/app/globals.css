@@ -1,20 +1,129 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* The app is light-only. Scope shadcn's dark: styles to an explicit .dark
+   class so they never kick in just because the OS is in dark mode. */
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Chatterbox theme for shadcn/ui.
+ * Use the semantic tokens (bg-primary, text-muted-foreground, bg-card, …) in
+ * components. The raw brand colours below are for illustration-style accents
+ * (logo, icon chips, dashed empty states) that have no semantic equivalent.
+ */
 
 @theme inline {
+  /* Fonts come from next/font variables set on <html> in app/layout.tsx. */
   --font-sans: var(--font-nunito), system-ui, sans-serif;
+  --font-heading: var(--font-fredoka), var(--font-nunito), sans-serif;
   --font-display: var(--font-fredoka), sans-serif;
 
+  /* Raw brand palette */
   --color-ink: #303650;
-  --color-muted: #5a6080;
   --color-brand: #7c83fd;
   --color-brand-strong: #4b52d6;
   --color-lavender: #e8e5ff;
   --color-lavender-line: #cfcaf5;
   --color-lavender-dash: #b9b3f0;
   --color-sky: #d6edff;
+
+  /* shadcn semantic tokens */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* --radius is 14px (the design's control radius); cards use rounded-3xl. */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-body {
-  background: #ffffff;
-  color: var(--color-ink);
+:root {
+  --radius: 0.875rem;
+
+  --background: #ffffff;
+  --foreground: #303650;
+  --card: #ffffff;
+  --card-foreground: #303650;
+  --popover: #ffffff;
+  --popover-foreground: #303650;
+
+  /* Actions. Darker than brand #7c83fd so white text passes WCAG AA. */
+  --primary: #4b52d6;
+  --primary-foreground: #ffffff;
+  /* Tinted surfaces and secondary buttons */
+  --secondary: #e8e5ff;
+  --secondary-foreground: #303650;
+  /* Quiet fills (hover, skeletons) and supporting text */
+  --muted: #f3f1ff;
+  --muted-foreground: #5a6080;
+  /* Selected / highlighted state (chips, menu hover) */
+  --accent: #d6edff;
+  --accent-foreground: #303650;
+
+  --destructive: #c8372d;
+  --border: #cfcaf5;
+  --input: #cfcaf5;
+  --ring: #7c83fd;
+
+  /* Charts: /r/, /θ/, then extras */
+  --chart-1: #7c83fd;
+  --chart-2: #2fa89a;
+  --chart-3: #f29c4b;
+  --chart-4: #e5689a;
+  --chart-5: #4b52d6;
+
+  --sidebar: #e8e5ff;
+  --sidebar-foreground: #303650;
+  --sidebar-primary: #7c83fd;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ffffff;
+  --sidebar-accent-foreground: #303650;
+  --sidebar-border: #cfcaf5;
+  --sidebar-ring: #7c83fd;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

@@ -2,40 +2,41 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ComponentType, type SVGProps } from "react";
-import { signOut } from "@/app/(auth)/actions";
+import { useState } from "react";
 import {
-  BarChartIcon,
-  CloseIcon,
-  LogoMark,
-  MenuIcon,
-  MicIcon,
-  SignOutIcon,
-  SlidersIcon,
-} from "./icons";
+  ChartNoAxesColumn,
+  LogOut,
+  Menu,
+  Mic,
+  SlidersHorizontal,
+  type LucideIcon,
+} from "lucide-react";
+import { signOut } from "@/app/(auth)/actions";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
+import { LogoMark } from "./icons";
 
-type NavItem = {
-  href: string;
-  label: string;
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
-};
+type NavItem = { href: string; label: string; icon: LucideIcon };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/session", label: "Start Session", icon: MicIcon },
-  { href: "/progress", label: "View Progress", icon: BarChartIcon },
-  { href: "/settings", label: "Settings", icon: SlidersIcon },
+  { href: "/session", label: "Start Session", icon: Mic },
+  { href: "/progress", label: "View Progress", icon: ChartNoAxesColumn },
+  { href: "/settings", label: "Settings", icon: SlidersHorizontal },
 ];
 
 type Variant = "desktop" | "drawer";
 
+const rowSize = (variant: Variant) =>
+  variant === "desktop" ? "min-h-12 text-base" : "min-h-13 text-[17px]";
+
 function Brand({ variant }: { variant: Variant }) {
   const desktop = variant === "desktop";
   return (
-    <div className={`flex items-center ${desktop ? "gap-2.5 px-3" : "gap-2"}`}>
+    <div className={cn("flex items-center", desktop ? "gap-2.5 px-3" : "gap-2")}>
       <LogoMark size={desktop ? 34 : 28} />
-      <span
-        className={`font-display font-semibold ${desktop ? "text-2xl tracking-[-0.2px]" : "text-[21px]"}`}
-      >
+      <span className={cn("font-display font-semibold", desktop ? "text-2xl tracking-[-0.2px]" : "text-[21px]")}>
         Chatterbox
       </span>
     </div>
@@ -44,11 +45,10 @@ function Brand({ variant }: { variant: Variant }) {
 
 function NavLinks({ variant, onNavigate }: { variant: Variant; onNavigate?: () => void }) {
   const pathname = usePathname();
-  const row = variant === "desktop" ? "min-h-12 text-base" : "min-h-[52px] text-[17px]";
 
   return (
     <nav>
-      <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+      <ul className="flex flex-col gap-1.5">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
@@ -57,18 +57,21 @@ function NavLinks({ variant, onNavigate }: { variant: Variant; onNavigate?: () =
                 href={href}
                 onClick={onNavigate}
                 aria-current={active ? "page" : undefined}
-                className={`flex items-center gap-3 rounded-[14px] px-3 text-ink no-underline transition-colors ${row} ${
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 text-sidebar-foreground transition-colors outline-none focus-visible:ring-3 focus-visible:ring-sidebar-ring/50",
+                  rowSize(variant),
                   active
-                    ? "bg-white font-bold shadow-[0_1px_3px_rgba(48,54,80,0.08)]"
-                    : "font-semibold hover:bg-white/60"
-                }`}
+                    ? "bg-sidebar-accent font-bold shadow-[0_1px_3px_rgba(48,54,80,0.08)]"
+                    : "font-semibold hover:bg-sidebar-accent/60",
+                )}
               >
                 <span
-                  className={`flex size-8 items-center justify-center rounded-[10px] ${
-                    active ? "bg-brand text-white" : "text-ink"
-                  }`}
+                  className={cn(
+                    "flex size-8 items-center justify-center rounded-[10px]",
+                    active && "bg-sidebar-primary text-sidebar-primary-foreground",
+                  )}
                 >
-                  <Icon />
+                  <Icon className="size-5" />
                 </span>
                 {label}
               </Link>
@@ -81,20 +84,23 @@ function NavLinks({ variant, onNavigate }: { variant: Variant; onNavigate?: () =
 }
 
 function SignOut({ variant }: { variant: Variant }) {
-  const row = variant === "desktop" ? "min-h-12 text-base" : "min-h-[52px] text-[17px]";
   return (
     <div className="mt-auto flex flex-col gap-3">
-      <div className="mx-3 h-px bg-lavender-line" />
+      <Separator className="mx-3 bg-sidebar-border data-horizontal:w-auto" />
       <form action={signOut}>
-        <button
+        <Button
           type="submit"
-          className={`flex w-full cursor-pointer items-center gap-3 rounded-[14px] border-none bg-transparent px-3 text-left font-sans font-semibold text-ink transition-colors hover:bg-white/60 ${row}`}
+          variant="ghost"
+          className={cn(
+            "h-auto w-full justify-start gap-3 px-3 font-semibold hover:bg-sidebar-accent/60",
+            rowSize(variant),
+          )}
         >
           <span className="flex size-8 items-center justify-center">
-            <SignOutIcon />
+            <LogOut className="size-5" />
           </span>
           Sign out
-        </button>
+        </Button>
       </form>
     </div>
   );
@@ -103,76 +109,40 @@ function SignOut({ variant }: { variant: Variant }) {
 export function DashboardNav() {
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
   return (
     <>
       {/* Desktop sidebar */}
       <aside
         aria-label="Dashboard navigation"
-        className="sticky top-0 hidden h-screen w-62 shrink-0 flex-col gap-9 bg-lavender px-4 pt-7 pb-6 lg:flex"
+        className="sticky top-0 hidden h-screen w-62 shrink-0 flex-col gap-9 bg-sidebar px-4 pt-7 pb-6 text-sidebar-foreground lg:flex"
       >
         <Brand variant="desktop" />
         <NavLinks variant="desktop" />
         <SignOut variant="desktop" />
       </aside>
 
-      {/* Mobile top bar */}
-      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between bg-lavender pr-3 pl-5 lg:hidden">
+      {/* Mobile top bar + slide-out drawer */}
+      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between bg-sidebar pr-3 pl-5 lg:hidden">
         <Brand variant="drawer" />
-        <button
-          type="button"
-          aria-label="Open menu"
-          aria-expanded={open}
-          aria-controls="mobile-nav"
-          onClick={() => setOpen(true)}
-          className="flex size-12 cursor-pointer items-center justify-center rounded-[14px] border-none bg-transparent text-ink"
-        >
-          <MenuIcon />
-        </button>
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Open menu" className="hover:bg-sidebar-accent/60">
+              <Menu className="size-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent
+            side="left"
+            aria-describedby={undefined}
+            className="w-76 max-w-[85vw] gap-7 border-none bg-sidebar px-4 pt-2 pb-7 text-sidebar-foreground data-[side=left]:w-76 [&>[data-slot=sheet-close]]:top-4 [&>[data-slot=sheet-close]]:right-4 [&>[data-slot=sheet-close]]:size-11"
+          >
+            <SheetTitle className="flex h-14 items-center pl-2">
+              <Brand variant="drawer" />
+            </SheetTitle>
+            <NavLinks variant="drawer" onNavigate={() => setOpen(false)} />
+            <SignOut variant="drawer" />
+          </SheetContent>
+        </Sheet>
       </header>
-
-      {/* Mobile drawer */}
-      <div className={`fixed inset-0 z-40 lg:hidden ${open ? "" : "pointer-events-none"}`} aria-hidden={!open}>
-        <div
-          onClick={() => setOpen(false)}
-          className={`absolute inset-0 bg-[rgba(48,54,80,0.45)] transition-opacity duration-200 ${
-            open ? "opacity-100" : "opacity-0"
-          }`}
-        />
-        <aside
-          id="mobile-nav"
-          aria-label="Dashboard navigation"
-          inert={!open}
-          className={`absolute inset-y-0 left-0 flex w-76 max-w-[85vw] flex-col gap-7 bg-lavender px-4 pt-2 pb-7 transition-[translate,box-shadow] duration-200 ease-out ${
-            open ? "translate-x-0 shadow-[8px_0_24px_rgba(48,54,80,0.18)]" : "-translate-x-full shadow-none"
-          }`}
-        >
-          <div className="flex h-14 items-center justify-between pl-2">
-            <Brand variant="drawer" />
-            <button
-              type="button"
-              aria-label="Close menu"
-              onClick={() => setOpen(false)}
-              className="flex size-12 cursor-pointer items-center justify-center rounded-[14px] border-none bg-transparent text-ink"
-            >
-              <CloseIcon />
-            </button>
-          </div>
-          <NavLinks variant="drawer" onNavigate={() => setOpen(false)} />
-          <SignOut variant="drawer" />
-        </aside>
-      </div>
     </>
   );
 }

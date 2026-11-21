@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export type SoundOption = { id: string; label: string };
 
@@ -18,28 +19,26 @@ export function SoundFilter({
   const options: SoundOption[] = [{ id: "all", label: "All sounds" }, ...sounds];
 
   return (
-    <div role="group" aria-label="Filter by sound" className="flex flex-wrap gap-2">
-      {options.map((o) => {
-        const pressed = o.id === selected;
-        return (
-          <button
-            key={o.id}
-            type="button"
-            aria-pressed={pressed}
-            onClick={() => {
-              setInternal(o.id);
-              onChange?.(o.id);
-            }}
-            className={`min-h-11 cursor-pointer rounded-full border-2 px-4 text-sm text-ink transition-colors lg:px-5 lg:text-[15px] ${
-              pressed
-                ? "border-ink bg-sky font-bold"
-                : "border-sky bg-white font-semibold hover:bg-sky/40"
-            }`}
-          >
-            {o.label}
-          </button>
-        );
-      })}
-    </div>
+    <ToggleGroup
+      type="single"
+      variant="pill"
+      size="chip"
+      spacing={2}
+      value={selected}
+      // Radix sends "" when the active chip is clicked again; keep one selected.
+      onValueChange={(id) => {
+        if (!id) return;
+        setInternal(id);
+        onChange?.(id);
+      }}
+      aria-label="Filter by sound"
+      className="flex-wrap"
+    >
+      {options.map((o) => (
+        <ToggleGroupItem key={o.id} value={o.id}>
+          {o.label}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
   );
 }
