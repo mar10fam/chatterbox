@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ComponentType, type SVGProps } from "react";
+import { signOut } from "@/app/(auth)/actions";
 import {
   BarChartIcon,
   CloseIcon,
@@ -84,15 +85,17 @@ function SignOut({ variant }: { variant: Variant }) {
   return (
     <div className="mt-auto flex flex-col gap-3">
       <div className="mx-3 h-px bg-lavender-line" />
-      <button
-        type="button"
-        className={`flex cursor-pointer items-center gap-3 rounded-[14px] border-none bg-transparent px-3 text-left font-semibold text-ink transition-colors hover:bg-white/60 ${row}`}
-      >
-        <span className="flex size-8 items-center justify-center">
-          <SignOutIcon />
-        </span>
-        Sign out
-      </button>
+      <form action={signOut}>
+        <button
+          type="submit"
+          className={`flex w-full cursor-pointer items-center gap-3 rounded-[14px] border-none bg-transparent px-3 text-left font-sans font-semibold text-ink transition-colors hover:bg-white/60 ${row}`}
+        >
+          <span className="flex size-8 items-center justify-center">
+            <SignOutIcon />
+          </span>
+          Sign out
+        </button>
+      </form>
     </div>
   );
 }
