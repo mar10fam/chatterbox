@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { TextAlignStart } from "lucide-react";
-import { DashboardCard, EmptyState } from "@/components/dashboard-card";
+import { connection } from "next/server";
+import { DashboardCard } from "@/components/dashboard-card";
 import { ProgressSoundFilter } from "./progress-sound-filter";
 import { ProgressChart } from "./progress-chart";
+import { HardestWords } from "./hardest-words";
 
 export const metadata: Metadata = {
   title: "View Progress · Chatterbox",
@@ -20,9 +21,21 @@ async function ChartSection({
 }: {
   searchParams: Promise<{ sound?: string }>;
 }) {
+  await connection();
   const { sound } = await searchParams;
   const selected = sound === "r" || sound === "l" ? sound : "all";
   return <ProgressChart sound={selected} />;
+}
+
+async function HardestSection({
+  searchParams,
+}: {
+  searchParams: Promise<{ sound?: string }>;
+}) {
+  await connection();
+  const { sound } = await searchParams;
+  const selected = sound === "r" || sound === "l" ? sound : "all";
+  return <HardestWords sound={selected} />;
 }
 
 export default function ProgressPage({
@@ -51,12 +64,9 @@ export default function ProgressPage({
         </DashboardCard>
 
         <DashboardCard id="hardest-words" title="Hardest words" className="lg:flex-[1_1_280px]">
-          <EmptyState
-            icon={TextAlignStart}
-            title="Nothing to show yet"
-            description="Words your child finds tricky will be listed here."
-            className="h-[150px] lg:h-auto lg:min-h-70"
-          />
+          <Suspense fallback={<p className="text-sm text-muted-foreground">Loading words…</p>}>
+            <HardestSection searchParams={searchParams} />
+          </Suspense>
         </DashboardCard>
       </div>
     </div>
