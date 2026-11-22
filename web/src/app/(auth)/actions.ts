@@ -4,13 +4,14 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { HOME_PATH } from "@/lib/routes";
 
 export type AuthState = { error?: string; message?: string; email?: string };
 
 // Only allow redirects to paths on this site.
 function safeNext(value: FormDataEntryValue | null) {
   const next = typeof value === "string" ? value : "";
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/progress";
+  return next.startsWith("/") && !next.startsWith("//") ? next : HOME_PATH;
 }
 
 function readCredentials(formData: FormData) {
@@ -42,14 +43,14 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo: `${origin}/auth/callback?next=/progress` },
+    options: { emailRedirectTo: `${origin}/auth/callback?next=${HOME_PATH}` },
   });
   if (error) return { error: error.message, email };
 
   // Email confirmation off → signed in right away.
   if (data.session) {
     revalidatePath("/", "layout");
-    redirect("/progress");
+    redirect(HOME_PATH);
   }
   return { message: `Check ${email} for a link to confirm your account.`, email };
 }

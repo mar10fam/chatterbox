@@ -8,7 +8,6 @@ import {
   LogOut,
   Menu,
   Mic,
-  SlidersHorizontal,
   type LucideIcon,
 } from "lucide-react";
 import { signOut } from "@/app/(auth)/actions";
@@ -23,7 +22,6 @@ type NavItem = { href: string; label: string; icon: LucideIcon };
 const NAV_ITEMS: NavItem[] = [
   { href: "/session", label: "Start Session", icon: Mic },
   { href: "/progress", label: "View Progress", icon: ChartNoAxesColumn },
-  { href: "/settings", label: "Settings", icon: SlidersHorizontal },
 ];
 
 type Variant = "desktop" | "drawer";

@@ -1,6 +1,7 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { HOME_PATH } from "@/lib/routes";
 
 /**
  * Target of the email confirmation link. Exchanges the one-time code for a
@@ -11,8 +12,8 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
-  const nextParam = searchParams.get("next") ?? "/progress";
-  const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/progress";
+  const nextParam = searchParams.get("next") ?? HOME_PATH;
+  const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : HOME_PATH;
 
   const supabase = await createClient();
   const { error } = code

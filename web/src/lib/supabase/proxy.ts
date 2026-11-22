@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/types/database";
 import { getSupabaseEnv, isSupabaseConfigured } from "./env";
+import { HOME_PATH } from "@/lib/routes";
 
 // Pages reachable without signing in.
 const PUBLIC_PATHS = ["/login", "/signup", "/auth"];
@@ -54,7 +55,7 @@ export async function updateSession(request: NextRequest) {
   };
 
   if (!signedIn && !matches(pathname, PUBLIC_PATHS)) return redirectTo("/login");
-  if (signedIn && matches(pathname, AUTH_PAGES)) return redirectTo("/progress");
+  if (signedIn && matches(pathname, AUTH_PAGES)) return redirectTo(HOME_PATH);
 
   return response;
 }
