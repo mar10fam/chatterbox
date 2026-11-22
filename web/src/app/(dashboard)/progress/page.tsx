@@ -2,16 +2,11 @@ import type { Metadata } from "next";
 import { ChartLine, TextAlignStart } from "lucide-react";
 import { DashboardCard, EmptyState } from "@/components/dashboard-card";
 import { SoundFilter } from "@/components/sound-filter";
+import { SOUND_LIST } from "@/lib/sounds";
 
 export const metadata: Metadata = {
   title: "View Progress · Chatterbox",
 };
-
-// Placeholder until sounds come from the database.
-const SOUNDS = [
-  { id: "r", label: "/r/" },
-  { id: "th", label: "/θ/ “th”" },
-];
 
 export default function ProgressPage() {
   return (
@@ -23,7 +18,7 @@ export default function ProgressPage() {
         </p>
       </header>
 
-      <SoundFilter sounds={SOUNDS} />
+      <SoundFilter sounds={SOUND_LIST} />
 
       <div className="flex flex-col gap-5 lg:flex-row lg:flex-wrap lg:gap-6">
         <DashboardCard id="accuracy" title="Accuracy over time" className="lg:flex-[2_1_420px]">
