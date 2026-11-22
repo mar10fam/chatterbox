@@ -1,4 +1,4 @@
-// Seeds a test parent with two kids and ~4 weeks of fake practice sessions.
+// Seeds a test parent with one child and ~4 weeks of fake practice sessions.
 //
 //   npm run seed         # test user + fake data (wipes only the test user's kids first)
 //   npm run seed:user    # just create/reset the test user
@@ -70,14 +70,14 @@ must(await parent.auth.signInWithPassword({ email, password }), "sign in as test
 
 must(await parent.from("children").delete().eq("parent_id", userId), "clear old children");
 const kids = must(
-  await parent.from("children").insert([{ name: "Maya" }, { name: "Leo" }]).select("id, name"),
+  await parent.from("children").insert([{ name: "Maya" }]).select("id, name"),
   "create children",
 );
 const kidByName = Object.fromEntries(kids.map((k) => [k.name, k.id]));
 console.log(`✓ Created children: ${kids.map((k) => k.name).join(", ")}`);
 
 const words = must(await parent.from("words").select("id, sound, phonemes"), "load words");
-const wordsBySound = { r: [], th: [] };
+const wordsBySound = { r: [], l: [] };
 for (const w of words) wordsBySound[w.sound].push(w);
 
 // ─── 3. Fake history ──────────────────────────────────────────
@@ -102,21 +102,19 @@ const shuffle = (arr) => {
   return a;
 };
 
-// Some words are harder (clusters, medial/final positions), so the
+// Some words are harder (clusters, medial positions), so the
 // "Hardest words" list has a clear story.
 const WORD_DIFFICULTY = {
   frog: -0.18, crab: -0.15, rhino: -0.12, reindeer: -0.1, parrot: -0.08, rat: 0.1, rabbit: 0.05,
-  thrush: -0.2, three: -0.16, panther: -0.1, mammoth: -0.06, moth: 0.06, bath: 0.08, thumb: 0.04,
+  flamingo: -0.2, koala: -0.15, ladybug: -0.1, leopard: -0.06, lion: 0.06, lamb: 0.08, lemur: 0.04,
 };
-// Typical childhood substitutions: /ɹ/ → [w] ("wabbit"), /θ/ → [f] ("fumb").
-const SUBSTITUTE = { ɹ: "w", ɚ: "ə", ɪɹ: "ɪə", θ: "f" };
-const TARGET = { r: ["ɹ", "ɚ", "ɪɹ"], th: ["θ"] };
+// Typical childhood substitutions: /ɹ/ → [w] ("wabbit"), /l/ → [w] ("wion").
+const SUBSTITUTE = { ɹ: "w", ɚ: "ə", ɪɹ: "ɪə", l: "w" };
+const TARGET = { r: ["ɹ", "ɚ", "ɪɹ"], l: ["l"] };
 
 const PLANS = [
-  // Maya alternates sounds; strong improvement on /r/, slower on /θ/.
-  { child: "Maya", sounds: ["r", "th"], start: { r: 0.35, th: 0.3 }, gain: { r: 0.5, th: 0.35 }, days: 0.55 },
-  // Leo practises only /r/ and is earlier in therapy.
-  { child: "Leo", sounds: ["r"], start: { r: 0.25 }, gain: { r: 0.3 }, days: 0.4 },
+  // Maya alternates sounds; strong improvement on /r/, slower on /l/.
+  { child: "Maya", sounds: ["r", "l"], start: { r: 0.35, l: 0.3 }, gain: { r: 0.5, l: 0.35 }, days: 0.7 },
 ];
 const HISTORY_DAYS = 28;
 

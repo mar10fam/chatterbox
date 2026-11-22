@@ -2,7 +2,7 @@
 // Shared contract between the session flow (writes data) and the analytics pages (reads data).
 // Change this file only when BOTH people agree.
 
-export type Sound = "r" | "th";
+export type Sound = "r" | "l";
 
 // ─────────────────────────────────────────────
 // WRITE SIDE: produced by the session flow

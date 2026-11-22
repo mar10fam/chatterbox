@@ -1,0 +1,17 @@
+import "server-only";
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
+
+/**
+ * Supabase client with the secret (service-role) key. Bypasses RLS, so use it
+ * only for the specific admin actions that need it, never for normal queries.
+ * Returns null when SUPABASE_SECRET_KEY isn't set.
+ */
+export function createAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const secret = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !secret) return null;
+  return createClient<Database>(url, secret, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
