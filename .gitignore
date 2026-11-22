@@ -7,3 +7,4 @@ __pycache__/
 
 # local voice recordings for testing the scorer
 speech/samples/
+.pytest_cache/
