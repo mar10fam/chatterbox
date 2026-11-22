@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { connection } from "next/server";
+import { Suspense } from "react";
 import { ArrowRight, Lock, Users } from "lucide-react";
 import { LogoMark } from "@/components/icons";
 import { HOME_PATH } from "@/lib/routes";
@@ -20,6 +22,24 @@ async function isSignedIn() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   return Boolean(data?.claims);
+}
+
+function AccountLinkView({ signedIn }: { signedIn: boolean }) {
+  return (
+    <Link
+      href={signedIn ? HOME_PATH : "/login"}
+      className="inline-flex min-h-11 items-center rounded-full bg-white px-5 text-[15px] font-bold text-ink hover:bg-white/90 lg:min-h-11.5 lg:px-6 lg:text-base"
+    >
+      {signedIn ? "Dashboard" : "Log in"}
+    </Link>
+  );
+}
+
+// Reads the session cookie, so it streams in under <Suspense> and the rest of
+// the landing page stays static. connection() keeps it out of prerendering.
+async function AccountLink() {
+  await connection();
+  return <AccountLinkView signedIn={await isSignedIn()} />;
 }
 
 const STEPS = [
@@ -70,9 +90,7 @@ function SoundRow({ label, letter, rest, ipaLetter, ipaRest, highlight }: {
   );
 }
 
-export default async function LandingPage() {
-  const signedIn = await isSignedIn();
-
+export default function LandingPage() {
   return (
     <div className="bg-background p-3 lg:p-5">
       {/* Hero */}
@@ -97,12 +115,9 @@ export default async function LandingPage() {
             <a href="#how" className="hidden font-semibold text-white hover:underline lg:inline">
               How it works
             </a>
-            <Link
-              href={signedIn ? HOME_PATH : "/login"}
-              className="inline-flex min-h-11 items-center rounded-full bg-white px-5 text-[15px] font-bold text-ink hover:bg-white/90 lg:min-h-11.5 lg:px-6 lg:text-base"
-            >
-              {signedIn ? "Dashboard" : "Log in"}
-            </Link>
+            <Suspense fallback={<AccountLinkView signedIn={false} />}>
+              <AccountLink />
+            </Suspense>
           </nav>
         </header>
 

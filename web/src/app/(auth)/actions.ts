@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { hasChild } from "@/lib/child";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { HOME_PATH, WELCOME_PATH } from "@/lib/routes";
 
@@ -40,8 +41,25 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   if (!email || !password) return { error: "Enter your email and password.", email };
   if (password.length < 8) return { error: "Use at least 8 characters for your password.", email };
 
-  const origin = (await headers()).get("origin") ?? "http://localhost:3000";
   const supabase = await createClient();
+
+  // No confirmation email: create the account already confirmed (server-side,
+  // with the secret key), then sign straight in.
+  const admin = createAdminClient();
+  if (admin) {
+    const { error: createError } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+    if (createError) {
+      const exists = createError.code === "email_exists" || createError.code === "user_already_exists";
+      return { error: exists ? "There’s already an account with that email. Try signing in." : createError.message, email };
+    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: error.message, email };
+    revalidatePath("/", "layout");
+    redirect(WELCOME_PATH);
+  }
+
+  // Fallback without a secret key: Supabase's normal sign-up (may email a link).
+  const origin = (await headers()).get("origin") ?? "http://localhost:3000";
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
