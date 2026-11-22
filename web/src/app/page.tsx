@@ -3,7 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Lock, Users } from "lucide-react";
 import { LogoMark } from "@/components/icons";
+import { HOME_PATH } from "@/lib/routes";
 import { SESSION_LENGTH } from "@/lib/sounds";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { createClient } from "@/lib/supabase/server";
 import heroImage from "../../public/landing/parent-and-child.webp";
 
 export const metadata: Metadata = {
@@ -12,7 +15,12 @@ export const metadata: Metadata = {
     "Your child names what’s in the picture. Chatterbox listens sound by sound and tracks how they’re doing, so practice between SLP visits really counts.",
 };
 
-// Signed-in users never see this page: the proxy sends them to the app.
+async function isSignedIn() {
+  if (!isSupabaseConfigured) return false;
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  return Boolean(data?.claims);
+}
 
 const STEPS = [
   {
@@ -62,7 +70,9 @@ function SoundRow({ label, letter, rest, ipaLetter, ipaRest, highlight }: {
   );
 }
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const signedIn = await isSignedIn();
+
   return (
     <div className="bg-background p-3 lg:p-5">
       {/* Hero */}
@@ -88,10 +98,10 @@ export default function LandingPage() {
               How it works
             </a>
             <Link
-              href="/login"
+              href={signedIn ? HOME_PATH : "/login"}
               className="inline-flex min-h-11 items-center rounded-full bg-white px-5 text-[15px] font-bold text-ink hover:bg-white/90 lg:min-h-11.5 lg:px-6 lg:text-base"
             >
-              Log in
+              {signedIn ? "Dashboard" : "Log in"}
             </Link>
           </nav>
         </header>

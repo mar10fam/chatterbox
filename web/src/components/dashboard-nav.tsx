@@ -32,12 +32,19 @@ const rowSize = (variant: Variant) =>
 function Brand({ variant }: { variant: Variant }) {
   const desktop = variant === "desktop";
   return (
-    <div className={cn("flex items-center", desktop ? "gap-2.5 px-3" : "gap-2")}>
+    <Link
+      href="/"
+      aria-label="Chatterbox home"
+      className={cn(
+        "flex w-fit items-center rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-sidebar-ring/50",
+        desktop ? "gap-2.5 px-3" : "gap-2",
+      )}
+    >
       <LogoMark size={desktop ? 34 : 28} />
       <span className={cn("font-display font-semibold", desktop ? "text-2xl tracking-[-0.2px]" : "text-[21px]")}>
         Chatterbox
       </span>
-    </div>
+    </Link>
   );
 }
 

@@ -6,8 +6,9 @@ import { HOME_PATH } from "@/lib/routes";
 
 // Pages reachable without signing in ("/" is the landing page; exact match).
 const PUBLIC_PATHS = ["/", "/login", "/signup", "/auth"];
-// Signed-in users skip these and go straight into the app.
-const AUTH_PAGES = ["/", "/login", "/signup"];
+// Signed-in users skip these and go straight into the app. The landing page
+// ("/") stays reachable so the logo in the app can link back to it.
+const AUTH_PAGES = ["/login", "/signup"];
 
 const matches = (pathname: string, paths: string[]) =>
   paths.some((p) => pathname === p || pathname.startsWith(`${p}/`));

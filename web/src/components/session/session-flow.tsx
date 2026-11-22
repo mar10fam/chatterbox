@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Check, ImageIcon, Loader2, Mic, PartyPopper, Square, Star, X } from "lucide-react";
+import { Check, Loader2, Mic, PartyPopper, Square, Star, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -285,12 +286,34 @@ export function SessionFlow({
       </header>
 
       <main className="flex flex-1 flex-col items-center justify-center gap-6 px-5 py-2 text-center sm:gap-7 sm:px-6 sm:pt-4 sm:pb-8">
-        {/* Picture card. Images come later; for now the word is shown as text. */}
-        <div className="relative aspect-square w-70 max-w-full rounded-[28px] bg-card p-4 shadow-[0_6px_24px_rgba(48,54,80,0.10)] sm:w-85 sm:rounded-[32px] sm:p-5">
-          <div className="flex size-full flex-col items-center justify-center gap-3 rounded-[18px] border-2 border-dashed border-lavender-dash sm:rounded-[22px]">
-            <ImageIcon className="size-9 text-brand sm:size-10" strokeWidth={1.8} aria-hidden />
-            <span className="font-heading text-4xl font-semibold sm:text-[44px]">{word.label}</span>
+        {/* Picture card: the word on top so the child knows what to say, the photo below.
+            Photos live in public/assets/{word_id}.png. */}
+        <div className="relative w-70 max-w-full rounded-[28px] bg-card p-4 pt-3 shadow-[0_6px_24px_rgba(48,54,80,0.10)] sm:w-85 sm:rounded-[32px] sm:p-5 sm:pt-4">
+          <p className="pb-3 font-heading text-[32px] leading-tight font-semibold sm:text-4xl">{word.label}</p>
+          <div className="relative aspect-[4/3] overflow-hidden rounded-[18px] bg-muted sm:rounded-[22px]">
+            <Image
+              key={word.id}
+              src={`/assets/${word.id}.png`}
+              alt={word.label}
+              fill
+              priority
+              sizes="(min-width: 640px) 300px, 248px"
+              className="object-cover"
+            />
           </div>
+          {/* Load the next picture in the background so it appears instantly. */}
+          {words[index + 1] && (
+            <Image
+              src={`/assets/${words[index + 1].id}.png`}
+              alt=""
+              aria-hidden
+              width={300}
+              height={225}
+              loading="eager"
+              sizes="(min-width: 640px) 300px, 248px"
+              className="pointer-events-none absolute size-px opacity-0"
+            />
+          )}
           {phase === "cheer" && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[28px] bg-card animate-in fade-in zoom-in-95 sm:rounded-[32px]">
               <PartyPopper className="size-14 text-brand" strokeWidth={1.8} aria-hidden />
