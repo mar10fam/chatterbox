@@ -1,4 +1,4 @@
-// Seeds a test parent with two kids and ~4 weeks of fake practice sessions.
+// Seeds a test parent with one child and ~4 weeks of fake practice sessions.
 //
 //   npm run seed         # test user + fake data (wipes only the test user's kids first)
 //   npm run seed:user    # just create/reset the test user
@@ -70,7 +70,7 @@ must(await parent.auth.signInWithPassword({ email, password }), "sign in as test
 
 must(await parent.from("children").delete().eq("parent_id", userId), "clear old children");
 const kids = must(
-  await parent.from("children").insert([{ name: "Maya" }, { name: "Leo" }]).select("id, name"),
+  await parent.from("children").insert([{ name: "Maya" }]).select("id, name"),
   "create children",
 );
 const kidByName = Object.fromEntries(kids.map((k) => [k.name, k.id]));
@@ -114,9 +114,7 @@ const TARGET = { r: ["ɹ", "ɚ", "ɪɹ"], l: ["l"] };
 
 const PLANS = [
   // Maya alternates sounds; strong improvement on /r/, slower on /l/.
-  { child: "Maya", sounds: ["r", "l"], start: { r: 0.35, l: 0.3 }, gain: { r: 0.5, l: 0.35 }, days: 0.55 },
-  // Leo practises only /r/ and is earlier in therapy.
-  { child: "Leo", sounds: ["r"], start: { r: 0.25 }, gain: { r: 0.3 }, days: 0.4 },
+  { child: "Maya", sounds: ["r", "l"], start: { r: 0.35, l: 0.3 }, gain: { r: 0.5, l: 0.35 }, days: 0.7 },
 ];
 const HISTORY_DAYS = 28;
 

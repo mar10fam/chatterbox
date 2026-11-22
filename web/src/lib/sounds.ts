@@ -24,4 +24,4 @@ export function isSound(value: string): value is Sound {
 }
 
 /** Pictures per practice session. */
-export const SESSION_LENGTH = 10;
+export const SESSION_LENGTH = 5;

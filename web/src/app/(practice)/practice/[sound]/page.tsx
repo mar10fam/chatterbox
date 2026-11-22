@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { SessionFlow, type SessionWord } from "@/components/session/session-flow";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,6 +11,8 @@ export const metadata: Metadata = {
   title: "Practice · Chatterbox",
 };
 
+type Props = PageProps<"/practice/[sound]">;
+
 function shuffle<T>(items: T[]): T[] {
   const a = [...items];
   for (let i = a.length - 1; i > 0; i--) {
@@ -19,24 +22,30 @@ function shuffle<T>(items: T[]): T[] {
   return a;
 }
 
-// Reads the URL and the signed-in user's session, so it runs at request time
-// inside <Suspense> (required by cacheComponents).
-async function PracticeSession({ params }: { params: PageProps<"/practice/[sound]">["params"] }) {
+// Reads the URL and the signed-in user's data, so it runs at request time
+// inside <Suspense> (required by cacheComponents). connection() keeps it out
+// of prerendering, and the shuffle below differs per request anyway.
+async function PracticeSession({ params }: Pick<Props, "params">) {
   const { sound } = await params;
   if (!isSound(sound)) notFound();
+  await connection();
 
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("words")
-    .select("id, label, phonemes")
-    .eq("sound", sound)
-    .order("sort_order");
-  if (error) throw new Error(`Couldn't load words: ${error.message}`);
+  const [wordsRes, childrenRes] = await Promise.all([
+    supabase.from("words").select("id, label, phonemes").eq("sound", sound).order("sort_order"),
+    // One child per parent for now; RLS limits this to the signed-in parent's.
+    supabase.from("children").select("id, name").order("created_at").limit(1),
+  ]);
+  if (wordsRes.error) throw new Error(`Couldn't load words: ${wordsRes.error.message}`);
+  if (childrenRes.error) throw new Error(`Couldn't load children: ${childrenRes.error.message}`);
 
-  const words: SessionWord[] = shuffle(data).slice(0, SESSION_LENGTH);
+  const child = childrenRes.data[0];
+  if (!child) redirect("/session"); // the Start page asks for the child's name first
+
+  const words: SessionWord[] = shuffle(wordsRes.data).slice(0, SESSION_LENGTH);
   if (words.length === 0) notFound();
 
-  return <SessionFlow sound={sound} words={words} />;
+  return <SessionFlow sound={sound} words={words} childId={child.id} childName={child.name} />;
 }
 
 function SessionSkeleton() {
@@ -49,7 +58,7 @@ function SessionSkeleton() {
   );
 }
 
-export default function PracticePage({ params }: PageProps<"/practice/[sound]">) {
+export default function PracticePage({ params }: Props) {
   return (
     <Suspense fallback={<SessionSkeleton />}>
       <PracticeSession params={params} />
