@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
-import { ChartLine, TextAlignStart } from "lucide-react";
+import { TextAlignStart } from "lucide-react";
 import { DashboardCard, EmptyState } from "@/components/dashboard-card";
-import { SoundFilter } from "@/components/sound-filter";
+import { ProgressSoundFilter } from "./progress-sound-filter";
+import { ProgressChart } from "./progress-chart";
 
 export const metadata: Metadata = {
   title: "View Progress · Chatterbox",
@@ -13,7 +15,21 @@ const SOUNDS = [
   { id: "th", label: "/θ/ “th”" },
 ];
 
-export default function ProgressPage() {
+async function ChartSection({
+  searchParams,
+}: {
+  searchParams: Promise<{ sound?: string }>;
+}) {
+  const { sound } = await searchParams;
+  const selected = sound === "r" || sound === "th" ? sound : "all";
+  return <ProgressChart sound={selected} />;
+}
+
+export default function ProgressPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sound?: string }>;
+}) {
   return (
     <div className="flex max-w-260 flex-col gap-5 lg:gap-7">
       <header className="flex flex-col gap-1 lg:gap-1.5">
@@ -23,16 +39,15 @@ export default function ProgressPage() {
         </p>
       </header>
 
-      <SoundFilter sounds={SOUNDS} />
+      <Suspense fallback={null}>
+        <ProgressSoundFilter sounds={SOUNDS} />
+      </Suspense>
 
       <div className="flex flex-col gap-5 lg:flex-row lg:flex-wrap lg:gap-6">
         <DashboardCard id="accuracy" title="Accuracy over time" className="lg:flex-[2_1_420px]">
-          <EmptyState
-            icon={ChartLine}
-            title="No practice sessions yet"
-            description="Accuracy for each sound will show up here after the first session."
-            className="h-[190px] lg:h-auto lg:min-h-70"
-          />
+          <Suspense fallback={<p className="text-sm text-muted-foreground">Loading chart…</p>}>
+            <ChartSection searchParams={searchParams} />
+          </Suspense>
         </DashboardCard>
 
         <DashboardCard id="hardest-words" title="Hardest words" className="lg:flex-[1_1_280px]">
