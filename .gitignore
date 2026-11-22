@@ -4,3 +4,6 @@ __pycache__/
 *.wav
 .DS_Store
 *.env
+
+# local voice recordings for testing the scorer
+speech/samples/

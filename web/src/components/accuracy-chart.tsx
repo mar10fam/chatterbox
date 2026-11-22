@@ -12,9 +12,10 @@ import {
 
 export type SessionPoint = { date: string; r?: number; l?: number }
 
+// Colours come from the theme (globals.css): chart-1 = /r/, chart-2 = /l/.
 const chartConfig = {
-  r: { label: "/r/", color: "#3b82f6" },
-  l: { label: "/l/", color: "#f97316" },
+  r: { label: "/r/", color: "var(--chart-1)" },
+  l: { label: "/l/", color: "var(--chart-2)" },
 } satisfies ChartConfig
 
 export function AccuracyChart({

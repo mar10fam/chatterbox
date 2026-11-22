@@ -1,7 +1,9 @@
+import { connection } from 'next/server'
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 
 async function ClientsDump() {
+  await connection()
   const supabase = await createClient()
   const { data, error } = await supabase.from('children').select('*')
 

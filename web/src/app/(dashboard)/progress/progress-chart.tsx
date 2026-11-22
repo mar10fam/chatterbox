@@ -11,14 +11,15 @@ export async function ProgressChart({ sound }: { sound: "all" | Sound }) {
   const { data: kids, error: kidsError } = await supabase
     .from("children")
     .select("id, name")
-    .order("name")
+    .order("created_at")
+    .limit(1)
 
   if (kidsError) {
     console.error("children query failed:", kidsError.code, kidsError.message)
     return <p>Couldn&apos;t load progress. Please try again.</p>
   }
 
-  const child = kids?.[0] // TODO: child switcher if a parent has several kids
+  const child = kids?.[0] // one child per parent for now
   if (!child) {
     return (
       <EmptyState
@@ -35,7 +36,7 @@ export async function ProgressChart({ sound }: { sound: "all" | Sound }) {
     .select("session_id, child_id, sound, completed_at, accuracy")
     .eq("child_id", child.id)
     .order("completed_at")
-  if (sound !== "all") query = query.eq("sound", sound as "r" | "th")
+  if (sound !== "all") query = query.eq("sound", sound)
 
   const { data, error } = await query
 

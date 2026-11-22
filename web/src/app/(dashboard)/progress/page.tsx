@@ -1,35 +1,30 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
+import { connection } from "next/server";
+import { Suspense } from "react";
 import { TextAlignStart } from "lucide-react";
 import { DashboardCard, EmptyState } from "@/components/dashboard-card";
-import { ProgressSoundFilter } from "./progress-sound-filter";
+import { Skeleton } from "@/components/ui/skeleton";
+import { SOUND_LIST } from "@/lib/sounds";
 import { ProgressChart } from "./progress-chart";
+import { ProgressSoundFilter } from "./progress-sound-filter";
 
 export const metadata: Metadata = {
   title: "View Progress · Chatterbox",
 };
 
-// Placeholder until sounds come from the database.
-const SOUNDS = [
-  { id: "r", label: "/r/" },
-  { id: "l", label: "/l/" },
-];
+type Props = PageProps<"/progress">;
 
-async function ChartSection({
-  searchParams,
-}: {
-  searchParams: Promise<{ sound?: string }>;
-}) {
+// Reads ?sound= and the signed-in parent's data, so it runs at request time
+// under <Suspense>. connection() keeps it out of prerendering (the Supabase
+// client reads the clock, which cacheComponents forbids while prerendering).
+async function ChartSection({ searchParams }: Pick<Props, "searchParams">) {
+  await connection();
   const { sound } = await searchParams;
   const selected = sound === "r" || sound === "l" ? sound : "all";
   return <ProgressChart sound={selected} />;
 }
 
-export default function ProgressPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ sound?: string }>;
-}) {
+export default function ProgressPage({ searchParams }: Props) {
   return (
     <div className="flex max-w-260 flex-col gap-5 lg:gap-7">
       <header className="flex flex-col gap-1 lg:gap-1.5">
@@ -39,13 +34,14 @@ export default function ProgressPage({
         </p>
       </header>
 
-      <Suspense fallback={null}>
-        <ProgressSoundFilter sounds={SOUNDS} />
+      {/* The filter reads ?sound= (useSearchParams), so it needs a Suspense boundary. */}
+      <Suspense fallback={<div className="h-11" />}>
+        <ProgressSoundFilter sounds={SOUND_LIST} />
       </Suspense>
 
       <div className="flex flex-col gap-5 lg:flex-row lg:flex-wrap lg:gap-6">
         <DashboardCard id="accuracy" title="Accuracy over time" className="lg:flex-[2_1_420px]">
-          <Suspense fallback={<p className="text-sm text-muted-foreground">Loading chart…</p>}>
+          <Suspense fallback={<Skeleton className="h-[300px] w-full rounded-2xl bg-card/70" />}>
             <ChartSection searchParams={searchParams} />
           </Suspense>
         </DashboardCard>
