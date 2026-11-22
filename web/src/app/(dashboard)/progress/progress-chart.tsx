@@ -1,41 +1,20 @@
 import { ChartLine } from "lucide-react"
 import { EmptyState } from "@/components/dashboard-card"
+import type { Child } from "@/lib/child"
 import { createClient } from "@/lib/supabase/server"
 import { AccuracyChart, type SessionPoint } from "@/components/accuracy-chart"
 
 type Sound = "r" | "l"
 
-export async function ProgressChart({ sound }: { sound: "all" | Sound }) {
+export async function ProgressChart({ sound, child }: { sound: "all" | Sound; child: Child }) {
   const supabase = await createClient()
-
-  const { data: kids, error: kidsError } = await supabase
-    .from("children")
-    .select("id, name")
-    .order("name")
-
-  if (kidsError) {
-    console.error("children query failed:", kidsError.code, kidsError.message)
-    return <p>Couldn&apos;t load progress. Please try again.</p>
-  }
-
-  const child = kids?.[0] // TODO: child switcher if a parent has several kids
-  if (!child) {
-    return (
-      <EmptyState
-        icon={ChartLine}
-        title="No children yet"
-        description="Add a child to start tracking progress."
-        className="h-[190px] lg:h-auto lg:min-h-70"
-      />
-    )
-  }
 
   let query = supabase
     .from("session_progress")
     .select("session_id, child_id, sound, completed_at, accuracy")
     .eq("child_id", child.id)
     .order("completed_at")
-  if (sound !== "all") query = query.eq("sound", sound as "r" | "th")
+  if (sound !== "all") query = query.eq("sound", sound)
 
   const { data, error } = await query
 

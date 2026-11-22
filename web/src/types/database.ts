@@ -228,7 +228,7 @@ export type Database = {
       }
     }
     Enums: {
-      sound: "r" | "th"
+      sound: "r" | "l"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -356,7 +356,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      sound: ["r", "th"],
+      sound: ["r", "l"],
     },
   },
 } as const
