@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Check, ImageIcon, Loader2, Mic, PartyPopper, Square, Star, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,7 @@ export function SessionFlow({
   const recorder = useRef<WavRecorder | null>(null);
   const micButton = useRef<HTMLButtonElement | null>(null);
   const stopTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cheerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startedAt = useRef<string | null>(null);
 
   const total = words.length;
@@ -79,6 +80,22 @@ export function SessionFlow({
     return () => {
       if (stopTimer.current) clearTimeout(stopTimer.current);
       recorder.current?.dispose();
+    };
+  }, []);
+
+  // Next.js (cacheComponents) hides pages you navigate away from with React
+  // <Activity> instead of unmounting them, which would bring back a finished
+  // session. This cleanup runs when the page is hidden, so every visit starts
+  // a fresh session. See next/dist/docs/01-app/02-guides/preserving-ui-state.md
+  useLayoutEffect(() => {
+    return () => {
+      if (stopTimer.current) clearTimeout(stopTimer.current);
+      if (cheerTimer.current) clearTimeout(cheerTimer.current);
+      startedAt.current = null;
+      setResults([]);
+      setReviews([]);
+      setStatus("");
+      setPhase("idle");
     };
   }, []);
 
@@ -132,7 +149,7 @@ export function SessionFlow({
     setCheer(CHEERS[Math.floor(Math.random() * CHEERS.length)]);
     setPhase("cheer");
     playDing();
-    setTimeout(() => {
+    cheerTimer.current = setTimeout(() => {
       setResults(next);
       if (next.length >= total) void save(next);
       else setPhase("idle");

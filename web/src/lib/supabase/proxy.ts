@@ -4,9 +4,10 @@ import type { Database } from "@/types/database";
 import { getSupabaseEnv, isSupabaseConfigured } from "./env";
 import { HOME_PATH } from "@/lib/routes";
 
-// Pages reachable without signing in.
-const PUBLIC_PATHS = ["/login", "/signup", "/auth"];
-const AUTH_PAGES = ["/login", "/signup"];
+// Pages reachable without signing in ("/" is the landing page; exact match).
+const PUBLIC_PATHS = ["/", "/login", "/signup", "/auth"];
+// Signed-in users skip these and go straight into the app.
+const AUTH_PAGES = ["/", "/login", "/signup"];
 
 const matches = (pathname: string, paths: string[]) =>
   paths.some((p) => pathname === p || pathname.startsWith(`${p}/`));

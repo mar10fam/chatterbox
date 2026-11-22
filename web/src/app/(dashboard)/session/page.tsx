@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { StartSessionForm } from "@/components/session/start-session-form";
+import { hasChild } from "@/lib/child";
+import { WELCOME_PATH } from "@/lib/routes";
 import { SESSION_LENGTH } from "@/lib/sounds";
 import { createClient } from "@/lib/supabase/server";
 
@@ -9,15 +12,13 @@ export const metadata: Metadata = {
   title: "Start a Session · Chatterbox",
 };
 
-// Checks whether the parent has added their child yet (request-time data), so
-// it streams in under <Suspense>. connection() keeps it out of prerendering
-// (the Supabase client reads the clock, which Next forbids while prerendering).
+// Parents who haven't added their child yet are sent to /welcome first. This
+// reads request-time data, so it sits under <Suspense>; connection() keeps it
+// out of prerendering (the Supabase client reads the clock).
 async function FormWithChild() {
   await connection();
-  const supabase = await createClient();
-  const { count, error } = await supabase.from("children").select("id", { count: "exact", head: true });
-  if (error) throw new Error(`Couldn't load your child: ${error.message}`);
-  return <StartSessionForm hasChild={(count ?? 0) > 0} />;
+  if (!(await hasChild(await createClient()))) redirect(WELCOME_PATH);
+  return <StartSessionForm />;
 }
 
 export default function StartSessionPage() {
@@ -30,7 +31,7 @@ export default function StartSessionPage() {
         </p>
       </header>
 
-      <Suspense fallback={<StartSessionForm hasChild />}>
+      <Suspense fallback={<StartSessionForm />}>
         <FormWithChild />
       </Suspense>
     </div>

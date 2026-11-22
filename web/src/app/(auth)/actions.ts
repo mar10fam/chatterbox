@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { hasChild } from "@/lib/child";
 import { createClient } from "@/lib/supabase/server";
-import { HOME_PATH } from "@/lib/routes";
+import { HOME_PATH, WELCOME_PATH } from "@/lib/routes";
 
 export type AuthState = { error?: string; message?: string; email?: string };
 
@@ -30,7 +31,8 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
   if (error) return { error: error.message, email };
 
   revalidatePath("/", "layout");
-  redirect(safeNext(formData.get("next")));
+  // First time in (no child yet)? Ask for the child's name before anything else.
+  redirect((await hasChild(supabase)) ? safeNext(formData.get("next")) : WELCOME_PATH);
 }
 
 export async function signUp(_prev: AuthState, formData: FormData): Promise<AuthState> {
@@ -43,14 +45,14 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo: `${origin}/auth/callback?next=${HOME_PATH}` },
+    options: { emailRedirectTo: `${origin}/auth/callback?next=${WELCOME_PATH}` },
   });
   if (error) return { error: error.message, email };
 
-  // Email confirmation off → signed in right away.
+  // Email confirmation off → signed in right away; next step is the child's name.
   if (data.session) {
     revalidatePath("/", "layout");
-    redirect(HOME_PATH);
+    redirect(WELCOME_PATH);
   }
   return { message: `Check ${email} for a link to confirm your account.`, email };
 }
@@ -59,5 +61,5 @@ export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
-  redirect("/login");
+  redirect("/");
 }

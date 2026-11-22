@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { SessionFlow, type SessionWord } from "@/components/session/session-flow";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WELCOME_PATH } from "@/lib/routes";
 import { isSound, SESSION_LENGTH } from "@/lib/sounds";
 import { createClient } from "@/lib/supabase/server";
 
@@ -40,12 +41,14 @@ async function PracticeSession({ params }: Pick<Props, "params">) {
   if (childrenRes.error) throw new Error(`Couldn't load children: ${childrenRes.error.message}`);
 
   const child = childrenRes.data[0];
-  if (!child) redirect("/session"); // the Start page asks for the child's name first
+  if (!child) redirect(WELCOME_PATH); // asks for the child's name first
 
   const words: SessionWord[] = shuffle(wordsRes.data).slice(0, SESSION_LENGTH);
   if (words.length === 0) notFound();
 
-  return <SessionFlow sound={sound} words={words} childId={child.id} childName={child.name} />;
+  // A new key per request means a brand-new SessionFlow (fresh state) on every visit.
+  const sessionKey = crypto.randomUUID();
+  return <SessionFlow key={sessionKey} sound={sound} words={words} childId={child.id} childName={child.name} />;
 }
 
 function SessionSkeleton() {

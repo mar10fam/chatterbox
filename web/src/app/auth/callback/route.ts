@@ -1,7 +1,8 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
+import { hasChild } from "@/lib/child";
 import { createClient } from "@/lib/supabase/server";
-import { HOME_PATH } from "@/lib/routes";
+import { HOME_PATH, WELCOME_PATH } from "@/lib/routes";
 
 /**
  * Target of the email confirmation link. Exchanges the one-time code for a
@@ -25,5 +26,5 @@ export async function GET(request: NextRequest) {
   if (error) {
     return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent("That link is invalid or has expired.")}`);
   }
-  return NextResponse.redirect(`${origin}${next}`);
+  return NextResponse.redirect(`${origin}${(await hasChild(supabase)) ? next : WELCOME_PATH}`);
 }
