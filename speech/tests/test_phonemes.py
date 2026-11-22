@@ -54,6 +54,18 @@ def test_only_r_before_a_vowel_is_judged():
     assert not judge(["f", "ɹ", "ɑː", "ɡ"], ["f", "w", "ɑ", "ɡ"], "r")[0]
 
 
+def test_l_rules():
+    assert infer_sound(["l", "aɪə", "n"]) == "l"
+    assert normalize(["l", "aɪə", "n"]) == ["l", "aɪ", "ə", "n"]
+    lion = normalize(["l", "aɪə", "n"])
+    assert judge(lion, ["l", "aɪ", "ə", "n"], "l")[0]
+    assert not judge(lion, ["w", "aɪ", "ə", "n"], "l")[0]  # "wion"
+    assert not judge(lion, ["j", "aɪ", "ə", "n"], "l")[0]  # "yion"
+    assert judge(lion, normalize(["ɫ", "aɪ", "ə", "n"]), "l")[0]
+    assert target_positions(["k", "oʊ", "ɑː", "l", "ə"], "l") == [3]
+    assert target_positions(["f", "l", "ɐ", "m", "ɪ", "ŋ", "ɡ", "oʊ"], "l") == [1]
+
+
 def test_judge_th_fumb_is_a_miss_and_voiced_th_is_ok():
     assert not judge(["θ", "ʌ", "m"], ["f", "ʌ", "m"], "th")[0]
     assert judge(["θ", "ʌ", "m"], ["ð", "ʌ", "m"], "th")[0]

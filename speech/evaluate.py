@@ -73,7 +73,7 @@ def main() -> None:
 
     # Per sound
     print(f"{'sound':6} {'accepted (correct clips)':>26} {'caught (error clips)':>24} {'no speech':>10}")
-    for sound in ("r", "th"):
+    for sound in ("r", "l", "th"):
         s = [r for r in rows if r["sound"] == sound]
         if not s:
             continue

@@ -3,7 +3,7 @@ import type { Sound } from "@/types/session";
 /** Display info for each target sound. Ids match the `sound` enum in Supabase. */
 export type SoundInfo = {
   id: Sound;
-  /** Shown large on cards and badges, e.g. "/th/" */
+  /** Shown large on cards and badges, e.g. "/l/" */
   ipa: string;
   /** Short label for chips and filters */
   label: string;
@@ -14,7 +14,7 @@ export type SoundInfo = {
 
 export const SOUNDS: Record<Sound, SoundInfo> = {
   r: { id: "r", ipa: "/r/", label: "/r/", examplePrefix: "as in", exampleWord: "rabbit" },
-  th: { id: "th", ipa: "/th/", label: "/th/", examplePrefix: "as in", exampleWord: "thumb" },
+  l: { id: "l", ipa: "/l/", label: "/l/", examplePrefix: "as in", exampleWord: "lion" },
 };
 
 export const SOUND_LIST: SoundInfo[] = Object.values(SOUNDS);

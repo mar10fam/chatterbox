@@ -1,7 +1,12 @@
 # Chatterbox database schema
 
 Postgres on Supabase. The schema is defined by the migrations in
-[`migrations/`](./migrations) (currently one: `20261121231148_progress_schema.sql`).
+[`migrations/`](./migrations):
+
+| Migration | What it does |
+|---|---|
+| `20261121231148_progress_schema.sql` | Tables, RLS, `save_session()`, views, original word list |
+| `20261122012912_replace_th_with_l.sql` | Replaces the /th/ sound with /l/: renames the enum value, swaps the 10 words |
 The TypeScript contract both app halves code against lives in
 [`web/src/types/session.ts`](../src/types/session.ts).
 
@@ -33,7 +38,7 @@ erDiagram
     sessions {
         uuid id PK
         uuid child_id FK "→ children.id"
-        sound sound "enum: r | th"
+        sound sound "enum: r | l"
         timestamptz started_at
         timestamptz completed_at "defaults to now()"
     }
@@ -52,7 +57,7 @@ erDiagram
 
     words {
         text id PK "e.g. rabbit"
-        sound sound "enum: r | th"
+        sound sound "enum: r | l"
         text label "e.g. Rabbit"
         text[] phonemes "espeak IPA"
         smallint sort_order
@@ -96,7 +101,7 @@ flowchart LR
 
 | Type | Values | Notes |
 |---|---|---|
-| `public.sound` (enum) | `r`, `th` | Target sound. Displayed as `/r/` and `/th/` (see `web/src/lib/sounds.ts`). Add a sound with `alter type public.sound add value '…'` plus words for it. |
+| `public.sound` (enum) | `r`, `l` | Target sound. Displayed as `/r/` and `/l/` (see `web/src/lib/sounds.ts`). Originally `th`; renamed to `l` because the phoneme model couldn't reliably hear /θ/ vs /f/. Add a sound with `alter type public.sound add value '…'` plus words for it. |
 
 ## Tables
 
@@ -155,8 +160,12 @@ The picture list: reference data, seeded by the migration (10 animals per sound)
 | `sort_order` | `smallint` | Display order within a sound. |
 
 Current words: **/r/** rabbit, raccoon, rooster, rhino, reindeer, robin, rat,
-frog, parrot, crab · **/th/** moth, sloth, panther, python, mammoth, thrush,
-thumb, three, teeth, bath.
+frog, parrot, crab · **/l/** lion, lamb, leopard, llama, lizard, lobster,
+ladybug, lemur, koala, flamingo.
+
+Every word has its target sound right before a vowel (rabbit, frog, lion,
+koala). That's the position the scorer judges, where the classic w-for-r and
+w-for-l substitutions happen.
 
 ### Deletes cascade downward
 

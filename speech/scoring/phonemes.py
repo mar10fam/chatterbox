@@ -8,7 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-Sound = Literal["r", "th"]
+Sound = Literal["r", "l", "th"]
 
 # espeak-ng en-us phones, i.e. everything the word list's target phonemes can
 # contain, plus a few close variants. The model's vocabulary has ~390 symbols
@@ -16,9 +16,9 @@ Sound = Literal["r", "th"]
 # can't land on foreign symbols (e.g. "ɑ5", "əɜ").
 ENGLISH_PHONES: frozenset[str] = frozenset(
     """
-    p b t d k ɡ f v θ ð s z ʃ ʒ h tʃ dʒ m n ŋ n̩ l ɹ w j ʔ ɾ
+    p b t d k ɡ f v θ ð s z ʃ ʒ h tʃ dʒ m n ŋ n̩ l ɫ l̩ ɹ w j ʔ ɾ
     i iː ɪ eɪ ɛ æ a aɪ aʊ ɑ ɑː ɔ ɔː ɔɪ oʊ ʊ u uː ʌ ə ɚ ɜ ɜː ɐ ᵻ
-    aɪɚ ɑːɹ ɔːɹ ɛɹ ɪɹ ʊɹ əl
+    aɪɚ aɪə ɑːɹ ɔːɹ ɛɹ ɪɹ ʊɹ əl
     """.split()
 )
 
@@ -35,9 +35,10 @@ _SPLIT = {
     "ɪɹ": ["ɪ", "ɹ"],
     "ʊɹ": ["ʊ", "ɹ"],
     "aɪɚ": ["aɪ", "ɚ"],
+    "aɪə": ["aɪ", "ə"],
     "əl": ["ə", "l"],
 }
-_RENAME = {"r": "ɹ", "ɝ": "ɚ", "g": "ɡ", "n̩": "n"}
+_RENAME = {"r": "ɹ", "ɝ": "ɚ", "g": "ɡ", "n̩": "n", "ɫ": "l", "l̩": "l"}
 _STRIP_CHARS = "ˈˌ0123456789"
 
 
@@ -73,10 +74,13 @@ TARGET_RULES: dict[str, TargetRule] = {
     "ɹ": TargetRule(frozenset({"ɹ", "ɚ"}), frozenset({"w", "l", "ʊ", "j"})),
     "ɚ": TargetRule(frozenset({"ɚ", "ɹ", "ɜ", "ɜː"}), frozenset({"ə", "ʊ", "ɐ", "ʌ"})),
     "θ": TargetRule(frozenset({"θ", "ð"}), frozenset({"f", "t", "s", "d", "v"})),
+    # /l/: gliding ("wion", "yion") and vocalising ("bawoon") are the usual errors.
+    "l": TargetRule(frozenset({"l", "ɫ"}), frozenset({"w", "j", "ʊ", "o", "oʊ", "ɹ", "n", "d"})),
 }
 
 SOUND_TARGETS: dict[Sound, frozenset[str]] = {
     "r": frozenset({"ɹ", "ɚ"}),
+    "l": frozenset({"l"}),
     "th": frozenset({"θ"}),
 }
 
@@ -88,13 +92,16 @@ def target_positions(target: list[str], sound: Sound) -> list[int]:
     where the classic w-for-r substitution happens. Syllable-final r
     ("reindeer", "rooster") is skipped: many accents don't pronounce it, so
     judging it would mark correct speech wrong.
+    /l/: likewise only an /l/ followed by a vowel ("lion", "flamingo",
+    "koala"). Syllable-final dark l ("seal") varies by accent.
     /th/: every /θ/.
     """
     if sound == "th":
         return [i for i, p in enumerate(target) if p == "θ"]
+    phone = "ɹ" if sound == "r" else "l"
     return [
         i for i, p in enumerate(target)
-        if p == "ɹ" and i + 1 < len(target) and target[i + 1] in VOWELS
+        if p == phone and i + 1 < len(target) and target[i + 1] in VOWELS
     ]
 
 
@@ -104,7 +111,9 @@ def infer_sound(target: list[str]) -> Sound:
         return "th"
     if t & SOUND_TARGETS["r"]:
         return "r"
-    raise ValueError(f"target {target} contains no /r/ or /θ/ sound")
+    if "l" in t:
+        return "l"
+    raise ValueError(f"target {target} contains no /r/, /l/ or /θ/ sound")
 
 
 # ─── Alignment ─────────────────────────────────────────────────────────────
