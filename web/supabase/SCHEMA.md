@@ -107,7 +107,10 @@ flowchart LR
 
 ### `children`
 
-One row per kid. Belongs to the signed-in parent.
+One row per kid. Belongs to the signed-in parent. The schema allows several
+children per parent, but the app currently uses **one**: it's created on
+`/welcome` (`web/src/app/(auth)/welcome/actions.ts`) and every page uses the
+parent's first child (`getChild()` in `web/src/lib/child.ts`).
 
 | Column | Type | Notes |
 |---|---|---|
