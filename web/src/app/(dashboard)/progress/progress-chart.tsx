@@ -3,18 +3,14 @@ import { AccuracyChart, type SessionPoint } from "@/components/accuracy-chart"
 import { ChartLine } from "lucide-react";
 import { EmptyState } from "@/components/dashboard-card";
 
-export async function ProgressChart({
-  sound,
-}: {
-  sound: "all" | "r" | "th"
-}) {
+export async function ProgressChart({ sound }: { sound: "all" | "r" | "l" }) {
   const supabase = await createClient()
 
   let query = supabase
     .from("session_progress")
     .select("session_id, sound, completed_at, accuracy")
     .order("completed_at")
-  if (sound !== "all") query = query.eq("sound", sound)
+  if (sound !== "all") query = query.eq("sound", sound as "r" | "th")
 
   const { data, error } = await query
 

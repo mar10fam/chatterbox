@@ -10,11 +10,11 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 
-export type SessionPoint = { date: string; r?: number; th?: number }
+export type SessionPoint = { date: string; r?: number; l?: number }
 
 const chartConfig = {
   r: { label: "/r/", color: "#3b82f6" },
-  th: { label: "/θ/ “th”", color: "#f97316" },
+  l: { label: "/l/", color: "#f97316" },
 } satisfies ChartConfig
 
 export function AccuracyChart({
@@ -22,9 +22,9 @@ export function AccuracyChart({
   sound,
 }: {
   data: SessionPoint[]
-  sound: "all" | "r" | "th"
+  sound: "all" | "r" | "l"
 }) {
-  const keys = sound === "all" ? (["r", "th"] as const) : ([sound] as const)
+  const keys = sound === "all" ? (["r", "l"] as const) : ([sound] as const)
 
   return (
     <ChartContainer config={chartConfig} className="min-h-[300px] w-full">

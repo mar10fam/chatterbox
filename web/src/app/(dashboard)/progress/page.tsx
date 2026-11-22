@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 // Placeholder until sounds come from the database.
 const SOUNDS = [
   { id: "r", label: "/r/" },
-  { id: "th", label: "/θ/ “th”" },
+  { id: "l", label: "/l/" },
 ];
 
 async function ChartSection({
@@ -21,7 +21,7 @@ async function ChartSection({
   searchParams: Promise<{ sound?: string }>;
 }) {
   const { sound } = await searchParams;
-  const selected = sound === "r" || sound === "th" ? sound : "all";
+  const selected = sound === "r" || sound === "l" ? sound : "all";
   return <ProgressChart sound={selected} />;
 }
 
