@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { TextAlignStart } from "lucide-react";
-import { DashboardCard, EmptyState } from "@/components/dashboard-card";
+import { DashboardCard } from "@/components/dashboard-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getChild } from "@/lib/child";
+import { WELCOME_PATH } from "@/lib/routes";
 import { SOUND_LIST } from "@/lib/sounds";
+import type { Sound } from "@/types/session";
+import { HardestWords } from "./hardest-words";
 import { ProgressChart } from "./progress-chart";
 import { ProgressSoundFilter } from "./progress-sound-filter";
 
@@ -14,14 +18,28 @@ export const metadata: Metadata = {
 
 type Props = PageProps<"/progress">;
 
-// Reads ?sound= and the signed-in parent's data, so it runs at request time
-// under <Suspense>. connection() keeps it out of prerendering (the Supabase
-// client reads the clock, which cacheComponents forbids while prerendering).
-async function ChartSection({ searchParams }: Pick<Props, "searchParams">) {
+/**
+ * Shared by both cards: wait for a real request (connection() keeps
+ * Supabase's clock reads out of prerendering), read ?sound=, and load the
+ * child. getChild() is cached, so both cards share one query. Parents without
+ * a child are sent to /welcome, like the rest of the app.
+ */
+async function loadProgressContext(searchParams: Props["searchParams"]) {
   await connection();
-  const { sound } = await searchParams;
-  const selected = sound === "r" || sound === "l" ? sound : "all";
-  return <ProgressChart sound={selected} />;
+  const [{ sound }, child] = await Promise.all([searchParams, getChild()]);
+  if (!child) redirect(WELCOME_PATH);
+  const selected: "all" | Sound = sound === "r" || sound === "l" ? sound : "all";
+  return { child, sound: selected };
+}
+
+async function ChartSection({ searchParams }: Pick<Props, "searchParams">) {
+  const { child, sound } = await loadProgressContext(searchParams);
+  return <ProgressChart sound={sound} child={child} />;
+}
+
+async function HardestWordsSection({ searchParams }: Pick<Props, "searchParams">) {
+  const { child, sound } = await loadProgressContext(searchParams);
+  return <HardestWords sound={sound} child={child} />;
 }
 
 export default function ProgressPage({ searchParams }: Props) {
@@ -47,12 +65,9 @@ export default function ProgressPage({ searchParams }: Props) {
         </DashboardCard>
 
         <DashboardCard id="hardest-words" title="Hardest words" className="lg:flex-[1_1_280px]">
-          <EmptyState
-            icon={TextAlignStart}
-            title="Nothing to show yet"
-            description="Words your child finds tricky will be listed here."
-            className="h-[150px] lg:h-auto lg:min-h-70"
-          />
+          <Suspense fallback={<Skeleton className="h-[300px] w-full rounded-2xl bg-card/70" />}>
+            <HardestWordsSection searchParams={searchParams} />
+          </Suspense>
         </DashboardCard>
       </div>
     </div>

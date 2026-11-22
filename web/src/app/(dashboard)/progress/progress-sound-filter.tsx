@@ -11,7 +11,9 @@ export function ProgressSoundFilter({ sounds }: { sounds: SoundOption[] }) {
   return (
     <SoundFilter
       sounds={sounds}
-      value={params.get("sound") ?? "all"}
+      // Anything that isn't a known sound (e.g. ?sound=zz) shows as "All sounds",
+      // matching how the page treats it.
+      value={sounds.some((s) => s.id === params.get("sound")) ? params.get("sound")! : "all"}
       onChange={(id) => {
         const next = new URLSearchParams(params.toString());
         if (id === "all") next.delete("sound");
